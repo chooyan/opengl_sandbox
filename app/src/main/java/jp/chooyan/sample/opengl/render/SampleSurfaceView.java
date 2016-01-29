@@ -14,7 +14,7 @@ public class SampleSurfaceView extends GLSurfaceView {
         super(context);
 
         setEGLContextClientVersion(OPENGL_ES_VERSION);
-        setRenderer(new SampleRenderer());
+        setRenderer(new SampleRenderer(getContext()));
         setRenderMode(RENDERMODE_CONTINUOUSLY);
     }
 }
