@@ -59,6 +59,11 @@ public class SampleRenderer implements GLSurfaceView.Renderer {
     private int mTextureId;
     private int mTextureCoord;
 
+    private float mAngle;
+
+    private int mWidth;
+    private int mHeight;
+
     public SampleRenderer(Context context) {
         mContext = context;
     }
@@ -100,26 +105,29 @@ public class SampleRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height); // 普通に原点からviewの幅、高さ通り
+        mWidth = width;
+        mHeight = height;
+
+    }
+
+    @Override
+    public void onDrawFrame(GL10 gl) {
 
         // 計算結果の保存場所
         float[] projectionMatrix = new float[16]; // 射影変換座標行列
         float[] viewMatrix = new float[16]; // ビュー変換座標行列
 
         Matrix.orthoM(projectionMatrix, 0,
-                width / 2f * -1, width / 2f, // 原点を挟んで幅分
-                height / 2f * -1, height / 2f, // 原点を挟んで高さ分
+                mWidth / 2f * -1, mWidth / 2f, // 原点を挟んで幅分
+                mHeight / 2f * -1, mHeight / 2f, // 原点を挟んで高さ分
                 0f, 2f); // lookatで指定したカメラの手前位置と同じ長さだけ奥にも伸ばす。
 
         Matrix.setLookAtM(viewMatrix, 0,
-                0f, 0f, 1f, // 1手前から
+                0f, 0f, 1f + mAngle / 1000, // 1手前から
                 0f, 0f, 0f, // 原点に向けて
                 0f, 1f, 0f); // 上むき（通常の向き）
 
         Matrix.multiplyMM(mViewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
-    }
-
-    @Override
-    public void onDrawFrame(GL10 gl) {
 
          // テクスチャ (UV マッピング) データ
         float textureCoord[] = {
@@ -178,7 +186,7 @@ public class SampleRenderer implements GLSurfaceView.Renderer {
 
         float[] worldMatrix = new float[16];
         Matrix.setIdentityM(worldMatrix, 0); // 単位座標への変換
-        Matrix.rotateM(worldMatrix, 0, (float) mFrameCount / 2f, 0, 0, 1); // 毎フレーム少しずつ回転する
+//        Matrix.rotateM(worldMatrix, 0, 0, 0, 0, 1); // 毎フレーム少しずつ回転する
 
         // シェーダーで使う変数へのポインタを取得
         int attPositionLoc = GLES20.glGetAttribLocation(mProgramId, VAR_POSITION);
@@ -221,5 +229,22 @@ public class SampleRenderer implements GLSurfaceView.Renderer {
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, magFilter);
 
         return texture;
+    }
+
+
+    /**
+     * Returns the rotation angle of the triangle shape (mTriangle).
+     *
+     * @return - A float representing the rotation angle.
+     */
+    public float getAngle() {
+        return mAngle;
+    }
+
+    /**
+     * Sets the rotation angle of the triangle shape (mTriangle).
+     */
+    public void setAngle(float angle) {
+        mAngle = angle;
     }
 }
