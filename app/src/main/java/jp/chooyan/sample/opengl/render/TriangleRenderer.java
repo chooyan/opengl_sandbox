@@ -15,6 +15,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import jp.chooyan.sample.opengl.R;
+import jp.chooyan.sample.opengl.render.primitive.Square;
 import jp.chooyan.sample.opengl.render.primitive.Triangle;
 
 /**
@@ -25,6 +26,7 @@ public class TriangleRenderer implements GLSurfaceView.Renderer {
     private Context mContext;
     private float[] mViewProjectionMatrix = new float[16];
     private Triangle mTriangle;
+    private Square mSquare;
     private float mAngle;
     private int mFrameCount = 0;
     public TriangleRenderer(Context context) {
@@ -57,6 +59,7 @@ public class TriangleRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mViewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
 
         mTriangle = new Triangle(new float[]{}, new float[]{}); //とりあえずデフォルトの三角形
+        mSquare = new Square();
     }
 
     @Override
@@ -66,8 +69,9 @@ public class TriangleRenderer implements GLSurfaceView.Renderer {
 
         float[] worldMatrix = new float[16];
         Matrix.setIdentityM(worldMatrix, 0); // 単位座標への変換
-        Matrix.rotateM(worldMatrix, 0, (float) mFrameCount / 2f, 0, 0, 1); // 毎フレーム少しずつ回転する
+        mSquare.draw(mViewProjectionMatrix, worldMatrix);
 
+        Matrix.rotateM(worldMatrix, 0, (float) mFrameCount * 20f, 0, 0, 1); // 毎フレーム少しずつ回転する
         mTriangle.draw(mViewProjectionMatrix, worldMatrix);
 
         mFrameCount++;
@@ -87,5 +91,9 @@ public class TriangleRenderer implements GLSurfaceView.Renderer {
      */
     public void setAngle(float angle) {
         mAngle = angle;
+    }
+
+
+    public void move(float dx, float dy) {
     }
 }

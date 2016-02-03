@@ -44,8 +44,7 @@ public class Triangle {
     public Triangle(float[] vertices, float[] colorCodes) {
         if (vertices.length != 9) { // verticesが不正であれば直角二等辺三角形
 
-            // 一辺100の正方形
-            float length = 1000f;
+            float length = 500f;
             float left = length / 2f * -1;
             float right = length / 2f ;
             float top = length / 2f * -1;

@@ -11,12 +11,12 @@ public class SampleSurfaceView extends GLSurfaceView {
 
     private static final int OPENGL_ES_VERSION = 2;
 
-    private TextureRenderer mRenderer;
+    private TriangleRenderer mRenderer;
     public SampleSurfaceView(Context context) {
         super(context);
 
         setEGLContextClientVersion(OPENGL_ES_VERSION);
-        setRenderer(mRenderer = new TextureRenderer(getContext()));
+        setRenderer(mRenderer = new TriangleRenderer(getContext()));
         setRenderMode(RENDERMODE_CONTINUOUSLY);
     }
 
