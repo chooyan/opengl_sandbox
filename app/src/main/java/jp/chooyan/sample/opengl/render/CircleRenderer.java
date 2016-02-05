@@ -22,6 +22,8 @@ public class CircleRenderer implements GLSurfaceView.Renderer {
     private float[] mProjectionMatrix = new float[16];
     private float[] mViewMatrix = new float[16];
     private Circle mCircle;
+    private int mWidth;
+    private int mHeight;
 
     public CircleRenderer(Context context) {
         mContext = context;
@@ -35,6 +37,9 @@ public class CircleRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
+        mWidth = width;
+        mHeight = height;
+
         GLES20.glViewport(0, 0, width, height); // 普通に原点からviewの幅、高さ通り
 
         // 計算結果の保存場所
@@ -70,8 +75,8 @@ public class CircleRenderer implements GLSurfaceView.Renderer {
 
     public void touch(float x, float y) {
 
-//        int cx = (int)x - (mWidth / 2);
-//        int cy = (int)y - (mHeight / 2);
+        int cx = (int)x - (mWidth / 2);
+        int cy = (int)y - (mHeight / 2);
 //
 //        float[] viewProjectionMatrix = new float[16];
 //        Matrix.multiplyMM(viewProjectionMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
@@ -79,6 +84,6 @@ public class CircleRenderer implements GLSurfaceView.Renderer {
 
 //        mCircles.add(new Circle(viewProjectionMatrix));
 
-        mCircle.startFalling();
+        mCircle.createNewCircle(cx, -cy);
     }
 }
