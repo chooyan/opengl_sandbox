@@ -1,5 +1,7 @@
 package jp.chooyan.sample.opengl.render.primitive;
 
+import android.opengl.Matrix;
+
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,6 +13,8 @@ import jp.chooyan.sample.opengl.render.BufferUtil;
  */
 public class Circle extends MonoColorFigure {
 
+    private boolean mIsFalling = false;
+    private long mCreatedTime;
     private FloatBuffer mVerticesBuffer;
     public Circle() {
         super();
@@ -19,7 +23,7 @@ public class Circle extends MonoColorFigure {
 
         // 原点
         vertices.add(0f);
-        vertices.add(0f);
+        vertices.add(0f + 800f);
         vertices.add(0f);
 
         float radius = 100;
@@ -31,7 +35,7 @@ public class Circle extends MonoColorFigure {
             float rate = i / detail;
 
             vertices.add((radius * (float)Math.cos(2.0 * Math.PI * rate))); // x
-            vertices.add((radius * (float)Math.sin(2.0 * Math.PI * rate))); // y
+            vertices.add((radius * (float)Math.sin(2.0 * Math.PI * rate)) + 800f); // y
             vertices.add(0f); // z
         }
 
@@ -51,6 +55,16 @@ public class Circle extends MonoColorFigure {
     }
 
     public void draw(float[] viewProjectionMatrix, float[] worldMatrix) {
+        if (mIsFalling) {
+            float passedTime = ((float)(System.currentTimeMillis() - mCreatedTime)) / 1000f;
+            float ratio = (int) (9.8 * passedTime * passedTime) * 5f;
+            Matrix.translateM(viewProjectionMatrix, 0, 0, -(ratio), 0);
+        }
         super.draw(viewProjectionMatrix, worldMatrix, mVerticesBuffer, null, new float[]{0.5f, 0.5f, 0.5f, 0.5f});
+    }
+
+    public void startFalling() {
+        mIsFalling = true;
+        mCreatedTime = System.currentTimeMillis();
     }
 }

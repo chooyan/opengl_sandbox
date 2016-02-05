@@ -34,16 +34,8 @@ public class SampleSurfaceView extends GLSurfaceView {
         float y = e.getY();
 
         switch (e.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                mOriginalX = x;
-                mOriginalY = y;
-                mRenderer.setMoving(true, 0f);
-                break;
-            case MotionEvent.ACTION_MOVE:
-                mRenderer.setMoving(true, (float)Math.sqrt(Math.abs(x - mOriginalX)) * (x < mOriginalX ? -1 : 1));
-                break;
             case MotionEvent.ACTION_UP:
-                mRenderer.setMoving(false, 0f);
+                mRenderer.touch(x, y);
                 break;
         }
 
