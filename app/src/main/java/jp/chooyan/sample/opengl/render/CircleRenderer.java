@@ -1,42 +1,31 @@
 package jp.chooyan.sample.opengl.render;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
-
-import java.nio.FloatBuffer;
-import java.nio.ShortBuffer;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import jp.chooyan.sample.opengl.R;
+import jp.chooyan.sample.opengl.render.primitive.Circle;
 import jp.chooyan.sample.opengl.render.primitive.Square;
 import jp.chooyan.sample.opengl.render.primitive.Triangle;
 
 /**
  * Created by tsuyoshi-chujo on 2016/01/28.
  */
-public class TriangleRenderer implements GLSurfaceView.Renderer {
+public class CircleRenderer implements GLSurfaceView.Renderer {
 
     private Context mContext;
     private float[] mViewProjectionMatrix = new float[16];
     private float[] mViewProjectionMatrix2 = new float[16];
     private float[] mViewProjectionMatrix3 = new float[16];
-    private Triangle mTriangle;
-    private Square mSquare;
-    private Square mSquare2;
-    private Square mSquare3;
-    private float mAngle;
-    private int mFrameCount = 0;
+    private Circle mCircle;
     private boolean mIsMoving;
     private float mRatio;
 
-    public TriangleRenderer(Context context) {
+    public CircleRenderer(Context context) {
         mContext = context;
     }
 
@@ -68,10 +57,7 @@ public class TriangleRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(mViewProjectionMatrix2, 0, projectionMatrix, 0, viewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
         Matrix.multiplyMM(mViewProjectionMatrix3, 0, projectionMatrix, 0, viewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
 
-        mTriangle = new Triangle(); //とりあえずデフォルトの三角形
-        mSquare = new Square(1);
-        mSquare2 = new Square(2);
-        mSquare3 = new Square(3);
+        mCircle = new Circle(); //とりあえずデフォルトの三角形
     }
 
     @Override
@@ -85,19 +71,10 @@ public class TriangleRenderer implements GLSurfaceView.Renderer {
             Matrix.translateM(mViewProjectionMatrix2, 0, mRatio, 0, 0);
             Matrix.translateM(mViewProjectionMatrix3, 0, mRatio / 1.5f, 0, 0);
         }
-        mSquare.draw(mViewProjectionMatrix3, worldMatrix);
-        mSquare3.draw(mViewProjectionMatrix, worldMatrix);
-        mTriangle.draw(mViewProjectionMatrix, worldMatrix);
-        mSquare2.draw(mViewProjectionMatrix2, worldMatrix);
+        mCircle.draw(mViewProjectionMatrix, worldMatrix);
 
-        mFrameCount++;
     }
 
     public void setMoving(boolean isMoving, float ratio) {
-        mIsMoving = isMoving;
-        mRatio = -ratio;
-        if (ratio != 0) {
-            mTriangle.changeDirection(ratio > 0 ? 1 : -1);
-        }
     }
 }

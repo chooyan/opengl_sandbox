@@ -72,7 +72,11 @@ public abstract class MonoColorFigure {
         GLES20.glUniformMatrix4fv(uniViewProjectionMatrixLoc, 1, false, viewProjectionMatrix, 0);
         GLES20.glUniformMatrix4fv(uniWorldMatrixLoc, 1, false, worldMatrix, 0);
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, indicesBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, indicesBuffer);
+        if (indicesBuffer != null) {
+            GLES20.glDrawElements(GLES20.GL_TRIANGLES, indicesBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, indicesBuffer);
+        } else {
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, verticesBuffer.capacity() / 3);
+        }
 
         GLES20.glDisableVertexAttribArray(attPositionLoc); // attributeを無効化しておく
 

@@ -11,18 +11,18 @@ public class SampleSurfaceView extends GLSurfaceView {
 
     private static final int OPENGL_ES_VERSION = 2;
 
-    private TriangleRenderer mRenderer;
+    private CircleRenderer mRenderer;
     public SampleSurfaceView(Context context) {
         super(context);
 
         setEGLContextClientVersion(OPENGL_ES_VERSION);
-        setRenderer(mRenderer = new TriangleRenderer(getContext()));
+        setRenderer(mRenderer = new CircleRenderer(getContext()));
         setRenderMode(RENDERMODE_CONTINUOUSLY);
     }
 
     private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
-    private float mPreviousX;
-    private float mPreviousY;
+    private float mOriginalX;
+    private float mOriginalY;
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
@@ -35,14 +35,16 @@ public class SampleSurfaceView extends GLSurfaceView {
 
         switch (e.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                mPreviousX = x;
-                mPreviousY = y;
+                mOriginalX = x;
+                mOriginalY = y;
+                mRenderer.setMoving(true, 0f);
                 break;
             case MotionEvent.ACTION_MOVE:
-                float dx = x - mPreviousX;
-                float dy = y - mPreviousY;
-
-                mRenderer.move(dx, dy);
+                mRenderer.setMoving(true, (float)Math.sqrt(Math.abs(x - mOriginalX)) * (x < mOriginalX ? -1 : 1));
+                break;
+            case MotionEvent.ACTION_UP:
+                mRenderer.setMoving(false, 0f);
+                break;
         }
 
         return true;

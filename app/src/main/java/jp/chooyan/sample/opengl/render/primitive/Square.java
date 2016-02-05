@@ -16,7 +16,7 @@ public class Square extends MonoColorFigure {
     private FloatBuffer mVerticesBuffer;
     private ShortBuffer mIndicesBuffer;
 
-    public Square() {
+    public Square(int type) {
         super();
 
         float length = 1000f;
@@ -25,16 +25,41 @@ public class Square extends MonoColorFigure {
         float top = length / 2f * -1;
         float bottom = length / 2f ;
 
-        mVerticesBuffer = BufferUtil.convert(
-                new float[]{
-                        left, top, 0f,
-                        left, bottom, 0f,
-                        right, bottom, 0f,
-                        right, top, 0f,
-                }
-        );
-
-        mColorCodes = new float[]{1f, 0f, 1f, 1f};
+        switch(type) {
+            case 1:
+                mVerticesBuffer = BufferUtil.convert(
+                        new float[]{
+                                left, top, 1f,
+                                left, bottom, 1f,
+                                right, bottom, 1f,
+                                right, top, 1f,
+                        }
+                );
+                mColorCodes = new float[]{1f, 0f, 1f, 0.7f};
+                break;
+            case 2:
+                mVerticesBuffer = BufferUtil.convert(
+                        new float[]{
+                                left + 300, top - 400, -0.5f,
+                                left + 300, bottom - 300, -0.5f,
+                                right + 300, bottom - 300, -0.5f,
+                                right + 300, top - 400, -0.5f,
+                        }
+                );
+                mColorCodes = new float[]{0.2f, 0.5f, 1f, 0.4f};
+                break;
+            case 3:
+                mVerticesBuffer = BufferUtil.convert(
+                        new float[]{
+                                -1000f,    -200f, 0f,
+                                -1000f,    -1500f,    0f,
+                                1000f, -1500f,    0f,
+                                1000f, -200f, 0f,
+                        }
+                );
+                mColorCodes = new float[]{0.9f, 0.4f, 0.4f, 0.5f};
+                break;
+        }
         mIndicesBuffer = BufferUtil.convert(new short[]{0, 1, 2, 0, 2, 3});
     }
 
