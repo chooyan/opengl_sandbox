@@ -47,12 +47,12 @@ public class CircleRenderer implements GLSurfaceView.Renderer {
         mViewMatrix = new float[16]; // ビュー変換座標行列
 
         Matrix.orthoM(mProjectionMatrix, 0,
-                width / 2f * -1, width / 2f, // 原点を挟んで幅分
-                height / 2f * -1, height / 2f, // 原点を挟んで高さ分
-                -4f, 4f); // lookatで指定したカメラの手前位置と同じ長さだけ奥にも伸ばす。
+                width / 2f, width / 2f* -1, // 原点を挟んで幅分
+                height / 2f, height / 2f* -1, // 原点を挟んで高さ分
+                -1f, 1f); // lookatで指定したカメラの手前位置と同じ長さだけ奥にも伸ばす。
 
         Matrix.setLookAtM(mViewMatrix, 0,
-                0f, 0f, 2f, // 1手前から
+                0f, 0f, -1f, // 1手前から
                 0f, 0f, 0f, // 原点に向けて
                 0f, 1f, 0f); // 上むき（通常の向き）
 
@@ -84,6 +84,6 @@ public class CircleRenderer implements GLSurfaceView.Renderer {
 
 //        mCircles.add(new Circle(viewProjectionMatrix));
 
-        mCircle.createNewCircle(cx, -cy);
+        mCircle.createNewCircle(cx, cy);
     }
 }
