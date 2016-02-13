@@ -1,4 +1,4 @@
-package jp.chooyan.sample.opengl.render;
+package jp.chooyan.sample.opengl.utils;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

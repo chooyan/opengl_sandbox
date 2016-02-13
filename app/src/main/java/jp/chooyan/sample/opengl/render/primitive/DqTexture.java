@@ -10,7 +10,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import jp.chooyan.sample.opengl.R;
-import jp.chooyan.sample.opengl.render.BufferUtil;
+import jp.chooyan.sample.opengl.utils.BufferUtil;
 
 /**
  * Created by tsuyoshi-chujo on 2016/02/01.

@@ -15,6 +15,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import jp.chooyan.sample.opengl.R;
+import jp.chooyan.sample.opengl.utils.BufferUtil;
 
 /**
  * Created by tsuyoshi-chujo on 2016/01/28.

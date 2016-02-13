@@ -5,9 +5,8 @@ import android.opengl.Matrix;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import jp.chooyan.sample.opengl.render.BufferUtil;
+import jp.chooyan.sample.opengl.utils.BufferUtil;
 
 /**
  * Created by o_fcf_hpbt_vvcc_p on 16/02/04.
