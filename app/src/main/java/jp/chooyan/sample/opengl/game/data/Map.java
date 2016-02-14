@@ -33,6 +33,16 @@ public class Map {
             {4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 4, 4, 4, 7},
     };
 
-    public static final float TILE_LENGTH = 200f;
+    public static final float getTileLength(float screenHeight) {
+        if (screenHeight > 2000f) {
+            return 200f;
+        } else if (screenHeight > 1800f) {
+            return 180f;
+        } else if (screenHeight > 1600f) {
+            return 160f;
+        } else {
+            return 140f;
+        }
+    };
 
 }

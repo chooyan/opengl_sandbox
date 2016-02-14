@@ -9,6 +9,7 @@ import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
 import jp.chooyan.sample.opengl.game.data.Map;
+import jp.chooyan.sample.opengl.game.data.ScreenManager;
 
 /**
  * Created by o_fcf_hpbt_vvcc_p on 16/02/10.
@@ -19,14 +20,14 @@ public class GameRenderer implements GLSurfaceView.Renderer {
     private float[] mProjectionMatrix = new float[16];
     private float[] mViewMatrix = new float[16];
 
-    private int mWidth;
-    private int mHeight;
-
     private boolean mIsMoving = false;
 
+    private EnemyManager mEnemyManager;
     private YusyaManager mYusyaManager;
     private TileManager mTileManager;
     private Context mContext;
+
+    private ScreenManager mScreenManager;
 
     public GameRenderer(Context context) {
         this.mContext = context;
@@ -35,19 +36,23 @@ public class GameRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
         GLES20.glClearColor(0f, 1f, 0f, 1f);
-        mYusyaManager = new YusyaManager(mContext);
-        mTileManager = new TileManager(mContext);
+
+        mScreenManager = new ScreenManager();
+        mYusyaManager = new YusyaManager(mContext, mScreenManager);
+        mEnemyManager = new EnemyManager(mContext, mScreenManager);
+        mTileManager = new TileManager(mContext, mScreenManager);
+
         mYusyaManager.setOnMovedListener(new YusyaManager.YushaOnMovedListener() {
             @Override
             public void onMovedX(float pixel) {
-                mTileManager.addDelta(-pixel, 0);
+                mScreenManager.setDeltaX(mScreenManager.getDeltaX() - pixel);
                 Matrix.translateM(mViewMatrix, 0, pixel, 0, 0);
                 Matrix.multiplyMM(mViewProjectionMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
             }
 
             @Override
             public void onMovedY(float pixel) {
-                mTileManager.addDelta(0, pixel);
+                mScreenManager.setDeltaY(mScreenManager.getDeltaY() + pixel);
                 Matrix.translateM(mViewMatrix, 0, 0, pixel, 0);
                 Matrix.multiplyMM(mViewProjectionMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
             }
@@ -56,15 +61,20 @@ public class GameRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceChanged(GL10 gl10, int width, int height) {
-
-        mWidth = width;
-        mHeight = height;
-
-        mTileManager.setScreen(mWidth, mHeight);
-        mYusyaManager.setPosition(4, 4);
-        mTileManager.setDelta(Math.max(0, 5 * Map.TILE_LENGTH - width / 2), Math.max(0, 5 * Map.TILE_LENGTH - width / 2));
-
         GLES20.glViewport(0, 0, width, height); // 普通に原点からviewの幅、高さ通り
+
+        int originalYushaPositionX = 4;
+        int originalYushaPositionY = 4;
+
+        mScreenManager.setWidth(width);
+        mScreenManager.setHeight(height);
+        mScreenManager.setTileLength(Map.getTileLength(height));
+        mScreenManager.setDeltaX(Math.max(0, (originalYushaPositionX + 1) * mScreenManager.getTileLength() - width / 2));
+        mScreenManager.setDeltaY(Math.max(0, (originalYushaPositionY + 1) * mScreenManager.getTileLength() - width / 2));
+        mScreenManager.setHorizontalTileNum((int) (width / mScreenManager.getTileLength()) + 1);
+        mScreenManager.setVerticalTileNum((int) (height / mScreenManager.getTileLength()) + 1);
+
+        mYusyaManager.setPosition(originalYushaPositionX, originalYushaPositionY);
 
         // 計算結果の保存場所
         mProjectionMatrix = new float[16]; // 射影変換座標行列
@@ -81,7 +91,9 @@ public class GameRenderer implements GLSurfaceView.Renderer {
                 0f, 0f, 0f, // 原点に向けて
                 0f, 1f, 0f); // 上むき（通常の向き）
 
-        Matrix.translateM(mViewMatrix, 0, Math.min(0, -1 * (4.5f * Map.TILE_LENGTH - width / 2)), Math.min(0, -1 * (4.5f * Map.TILE_LENGTH - height / 2)), 0);
+        Matrix.translateM(mViewMatrix, 0,
+                Math.min(0, -1 * ((originalYushaPositionX + 0.5f) * mScreenManager.getTileLength() - width / 2)),
+                Math.min(0, -1 * ((originalYushaPositionY + 0.5f) * mScreenManager.getTileLength() - height / 2)), 0);
 
         Matrix.multiplyMM(mViewProjectionMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0); // 射影変換行列とビュー変換座標行列を掛け合わせる。
 
@@ -101,7 +113,7 @@ public class GameRenderer implements GLSurfaceView.Renderer {
 
         mTileManager.draw(mViewProjectionMatrix, worldMatrix);
         mYusyaManager.draw(mViewProjectionMatrix, worldMatrix);
-
+        mEnemyManager.draw(mViewProjectionMatrix, worldMatrix);
     }
 
     private int mLastDirection;

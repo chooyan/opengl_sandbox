@@ -11,6 +11,7 @@ import java.nio.ShortBuffer;
 
 import jp.chooyan.sample.opengl.R;
 import jp.chooyan.sample.opengl.game.data.Map;
+import jp.chooyan.sample.opengl.game.data.ScreenManager;
 import jp.chooyan.sample.opengl.render.primitive.MonoColorFigure;
 import jp.chooyan.sample.opengl.utils.BufferUtil;
 
@@ -62,7 +63,12 @@ public class YusyaManager extends MonoColorFigure{
     private int mTextureId;
     private int mTextureCoordLoc;
 
-    public YusyaManager(Context context) {
+    private ScreenManager mScreenManager;
+
+    public YusyaManager(Context context, ScreenManager screenManager) {
+
+        mScreenManager = screenManager;
+
         // region:シェーダープログラムのコンパイル
         int vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
         GLES20.glShaderSource(vertexShader, VERTEX_SHADER_SOURCE);
@@ -136,10 +142,10 @@ public class YusyaManager extends MonoColorFigure{
 //            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
         float plusY = System.currentTimeMillis() % 500 > 250 && isMoving() ? -20f : 0;
-        float left = horizontalNum * Map.TILE_LENGTH - walkDistanceXLeft;
-        float right = Map.TILE_LENGTH + horizontalNum * Map.TILE_LENGTH - walkDistanceXLeft;
-        float top = verticalNum * Map.TILE_LENGTH - walkDistanceYLeft + plusY;
-        float bottom = Map.TILE_LENGTH + verticalNum * Map.TILE_LENGTH - walkDistanceYLeft + plusY;
+        float left = horizontalNum * mScreenManager.getTileLength() - walkDistanceXLeft;
+        float right = mScreenManager.getTileLength() + horizontalNum * mScreenManager.getTileLength() - walkDistanceXLeft;
+        float top = verticalNum * mScreenManager.getTileLength() - walkDistanceYLeft + plusY;
+        float bottom = mScreenManager.getTileLength() + verticalNum * mScreenManager.getTileLength() - walkDistanceYLeft + plusY;
 
         if (walkDistanceXLeft != 0) {
             float movePix = walkDistanceXLeft > 0 ? -20f : 20f;
@@ -216,7 +222,7 @@ public class YusyaManager extends MonoColorFigure{
 
             if (TileType.get(Map.MAP[mPositionY][mPositionX - 1]).isWalkable()) {
                 mPositionX--;
-                walkDistanceXLeft = -Map.TILE_LENGTH;
+                walkDistanceXLeft = -mScreenManager.getTileLength();
             }
         } else {
             mDirection = 2;
@@ -224,7 +230,7 @@ public class YusyaManager extends MonoColorFigure{
 
             if (TileType.get(Map.MAP[mPositionY][mPositionX + 1]).isWalkable()) {
                 mPositionX++;
-                walkDistanceXLeft = Map.TILE_LENGTH;
+                walkDistanceXLeft = mScreenManager.getTileLength();
             }
         }
     }
@@ -238,7 +244,7 @@ public class YusyaManager extends MonoColorFigure{
 
             if (TileType.get(Map.MAP[mPositionY - 1][mPositionX]).isWalkable()) {
                 mPositionY--;
-                walkDistanceYLeft = -Map.TILE_LENGTH;
+                walkDistanceYLeft = -mScreenManager.getTileLength();
             }
         } else {
             mDirection = 0;
@@ -246,7 +252,7 @@ public class YusyaManager extends MonoColorFigure{
 
             if (TileType.get(Map.MAP[mPositionY + 1][mPositionX]).isWalkable()) {
                 mPositionY++;
-                walkDistanceYLeft = Map.TILE_LENGTH;
+                walkDistanceYLeft = mScreenManager.getTileLength();
             }
         }
     }

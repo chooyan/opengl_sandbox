@@ -5,10 +5,12 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
-import android.util.Log;
 
 import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import jp.chooyan.sample.opengl.R;
 import jp.chooyan.sample.opengl.game.data.Map;
@@ -19,10 +21,15 @@ import jp.chooyan.sample.opengl.utils.BufferUtil;
 /**
  * Created by tsuyoshi-chujo on 2016/02/01.
  */
-public class TileManager {
+public class EnemyManager extends MonoColorFigure{
 
-    private static final float TILE_HORIZONTAL_NUM = 3f;
-    private static final float TILE_VERTICAL_NUM = 3f;
+    private int mPositionX;
+    private int mPositionY;
+
+    private float walkDistanceXLeft; // x方向への残りの移動距離
+    private float walkDistanceYLeft; // y方向への残りの移動距離
+
+    private int mDirection = 0; // 0, 1, 2, 3 -> 下、上、右、左
 
     // シェーダーで使う変数たち
     private static final String VAR_VIEW_PROJECTIVE_MATRIX = "viewProjectiveMatrix";
@@ -59,10 +66,13 @@ public class TileManager {
     private int mTextureCoordLoc;
 
     private ScreenManager mScreenManager;
+    private Random mRandom;
 
-    public TileManager(Context context, ScreenManager screenManager) {
+    public EnemyManager(Context context, ScreenManager screenManager) {
+        setPosition(4, 5);
 
         mScreenManager = screenManager;
+        mRandom = new Random(System.currentTimeMillis());
 
         // region:シェーダープログラムのコンパイル
         int vertexShader = GLES20.glCreateShader(GLES20.GL_VERTEX_SHADER);
@@ -84,7 +94,7 @@ public class TileManager {
         // endregion:
 
         // 地面テクスチャの作成
-        final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.tiles);
+        final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.character);
         mTextureId = loadTexture(bitmap, GLES20.GL_NEAREST, GLES20.GL_LINEAR);
         mTextureLoc = GLES20.glGetUniformLocation(mProgramId, VAR_TEXTURE);
         mTextureCoordLoc = GLES20.glGetAttribLocation(mProgramId, VAR_TEXTURE_COORD);
@@ -92,7 +102,29 @@ public class TileManager {
         bitmap.recycle();
     }
 
+    public void setPosition(int x, int y) {
+        mPositionX = x;
+        mPositionY = y;
+    }
+
     public void draw(float[] viewProjectionMatrix, float[] worldMatrix) {
+        if (mRandom.nextInt(60) == 1) { // 3秒に１回くらい動く
+            switch (mRandom.nextInt(4)) {
+                case 0:
+                    moveY(-1);
+                    break;
+                case 1:
+                    moveY(1);
+                    break;
+                case 2:
+                    moveX(1);
+                    break;
+                case 3:
+                    moveX(-1);
+                    break;
+            }
+        }
+
 
         // テクスチャのブレンド設定
         GLES20.glEnable(GLES20.GL_TEXTURE_2D);
@@ -104,41 +136,25 @@ public class TileManager {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, mTextureId);
         GLES20.glUniform1i(mTextureLoc, 0);
 
-        int leftestTileNum = (int) (mScreenManager.getDeltaX() / mScreenManager.getTileLength()) - 1;
-        int toppestTileNum = (int) (-mScreenManager.getDeltaY() / mScreenManager.getTileLength()) - 1;
-
-        for (int i = 0; i < Map.MAP.length; i++) {
-            if (i < toppestTileNum || i > toppestTileNum + mScreenManager.getVerticalTileNum() + 3) continue;
-
-            for (int j = 0; j < Map.MAP[i].length; j++) {
-                if (j < leftestTileNum || j > leftestTileNum + mScreenManager.getHorizontalTileNum() + 2) continue;
-
-                int id = Map.MAP[i][j];
-                TileType type = TileType.get(id);
-                renderTile(type.getHorizontalTile(), type.getVerticalTile(), (float)j, (float)i, viewProjectionMatrix, worldMatrix);
-            }
-        }
+        render((float) mPositionX, (float) mPositionY, viewProjectionMatrix, worldMatrix);
 
         GLES20.glDisable(GLES20.GL_BLEND);
         GLES20.glDisable(GLES20.GL_TEXTURE_2D);
     }
 
-    private void renderTile(float horizontalTile, float verticalTile, float horizontalNum, float verticalNum, float[] viewProjectionMatrix, float[] worldMatrix) {
-        float horizontalDivider = horizontalTile / TILE_HORIZONTAL_NUM;
-        float verticalDivider = verticalTile / TILE_VERTICAL_NUM;
-
-        float horizontalStart = horizontalDivider - (1f / TILE_HORIZONTAL_NUM);
-        float horizontalEnd = horizontalDivider;
-
-        float verticalStart = verticalDivider - (1f / TILE_VERTICAL_NUM);
-        float verticalEnd = verticalDivider;
-
+    private void render(float horizontalNum, float verticalNum, float[] viewProjectionMatrix, float[] worldMatrix) {
         // テクスチャ (UV マッピング) データ
+        float startU = 1f / 4f * (float)mDirection;
+        float endU = startU + (1f / 4f);
+
+        float startV = 1f / 2f * 1;
+        float endV = startV + (1f / 2f);
+
         float textureCoord[] = {
-                horizontalStart, verticalStart,	// 左上
-                horizontalStart, verticalEnd,	// 左下
-                horizontalEnd, verticalEnd,	// 右下
-                horizontalEnd, verticalStart,	// 右上
+                startU, startV,	// 左上
+                startU, endV,	// 左下
+                endU, endV,	// 右下
+                endU, startV	// 右上
         };
 
         ShortBuffer textureIndicesBuffer = BufferUtil.convert(new short[]{0, 1, 2, 0, 2, 3});
@@ -147,10 +163,21 @@ public class TileManager {
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, textureIndicesBuffer.capacity(), GLES20.GL_UNSIGNED_SHORT, textureIndicesBuffer);
 //            GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4);
 
-        float left = horizontalNum * mScreenManager.getTileLength();
-        float right = mScreenManager.getTileLength() + horizontalNum * mScreenManager.getTileLength();
-        float top = verticalNum * mScreenManager.getTileLength();
-        float bottom = mScreenManager.getTileLength() + verticalNum * mScreenManager.getTileLength();
+        float plusY = System.currentTimeMillis() % 500 > 250 && isMoving() ? -20f : 0;
+        float left = horizontalNum * mScreenManager.getTileLength() - walkDistanceXLeft;
+        float right = mScreenManager.getTileLength() + horizontalNum * mScreenManager.getTileLength() - walkDistanceXLeft;
+        float top = verticalNum * mScreenManager.getTileLength() - walkDistanceYLeft + plusY;
+        float bottom = mScreenManager.getTileLength() + verticalNum * mScreenManager.getTileLength() - walkDistanceYLeft + plusY;
+
+        if (walkDistanceXLeft != 0) {
+            float movePix = walkDistanceXLeft > 0 ? -20f : 20f;
+            walkDistanceXLeft += movePix;
+        }
+
+        if (walkDistanceYLeft != 0) {
+            float movePix = walkDistanceYLeft > 0 ? -20f : 20f;
+            walkDistanceYLeft += movePix;
+        }
 
         FloatBuffer verticesBuffer;
         verticesBuffer = BufferUtil.convert(new float[] {
@@ -200,5 +227,53 @@ public class TileManager {
         GLES20.glTexParameterf(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, magFilter);
 
         return texture;
+    }
+
+    public void moveX(int duration) {
+        if (isMoving()) return;
+
+        if (duration < 0) {
+            mDirection = 3;
+            if (mPositionX == 0) return;
+
+            if (TileType.get(Map.MAP[mPositionY][mPositionX - 1]).isWalkable()) {
+                mPositionX--;
+                walkDistanceXLeft = -mScreenManager.getTileLength();
+            }
+        } else {
+            mDirection = 2;
+            if (mPositionX == Map.MAP[0].length - 1) return;
+
+            if (TileType.get(Map.MAP[mPositionY][mPositionX + 1]).isWalkable()) {
+                mPositionX++;
+                walkDistanceXLeft = mScreenManager.getTileLength();
+            }
+        }
+    }
+
+    public void moveY(int duration) {
+        if (isMoving()) return;
+
+        if (duration < 0) {
+            mDirection = 1;
+            if (mPositionY == 0) return;
+
+            if (TileType.get(Map.MAP[mPositionY - 1][mPositionX]).isWalkable()) {
+                mPositionY--;
+                walkDistanceYLeft = -mScreenManager.getTileLength();
+            }
+        } else {
+            mDirection = 0;
+            if (mPositionY == Map.MAP.length - 1) return;
+
+            if (TileType.get(Map.MAP[mPositionY + 1][mPositionX]).isWalkable()) {
+                mPositionY++;
+                walkDistanceYLeft = mScreenManager.getTileLength();
+            }
+        }
+    }
+
+    private boolean isMoving() {
+        return walkDistanceXLeft != 0f || walkDistanceYLeft != 0f;
     }
 }
