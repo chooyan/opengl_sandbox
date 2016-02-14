@@ -25,6 +25,7 @@ public class YusyaManager extends MonoColorFigure{
     private float walkDistanceXLeft; // x方向への残りの移動距離
     private float walkDistanceYLeft; // y方向への残りの移動距離
 
+    private int mDirection = 0; // 0, 1, 2, 3 -> 下、上、右、左
     private YushaOnMovedListener mListener;
 
     // シェーダーで使う変数たち
@@ -82,7 +83,7 @@ public class YusyaManager extends MonoColorFigure{
         // endregion:
 
         // 地面テクスチャの作成
-        final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.yusha);
+        final Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.character);
         mTextureId = loadTexture(bitmap, GLES20.GL_NEAREST, GLES20.GL_LINEAR);
         mTextureLoc = GLES20.glGetUniformLocation(mProgramId, VAR_TEXTURE);
         mTextureCoordLoc = GLES20.glGetAttribLocation(mProgramId, VAR_TEXTURE_COORD);
@@ -115,11 +116,17 @@ public class YusyaManager extends MonoColorFigure{
 
     private void render(float horizontalNum, float verticalNum, float[] viewProjectionMatrix, float[] worldMatrix) {
         // テクスチャ (UV マッピング) データ
+        float startU = 1f / 4f * (float)mDirection;
+        float endU = startU + (1f / 4f);
+
+        float startV = 1f / 2f * 0;
+        float endV = startV + (1f / 2f);
+
         float textureCoord[] = {
-                0f, 0f,	// 左上
-                0f, 1f,	// 左下
-                1f, 1f,	// 右下
-                1f, 0f	// 右上
+                startU, startV,	// 左上
+                startU, endV,	// 左下
+                endU, endV,	// 右下
+                endU, startV	// 右上
         };
 
         ShortBuffer textureIndicesBuffer = BufferUtil.convert(new short[]{0, 1, 2, 0, 2, 3});
@@ -204,6 +211,7 @@ public class YusyaManager extends MonoColorFigure{
         if (isMoving()) return;
 
         if (duration < 0) {
+            mDirection = 3;
             if (mPositionX == 0) return;
 
             if (TileType.get(Map.MAP[mPositionY][mPositionX - 1]).isWalkable()) {
@@ -211,6 +219,7 @@ public class YusyaManager extends MonoColorFigure{
                 walkDistanceXLeft = -Map.TILE_LENGTH;
             }
         } else {
+            mDirection = 2;
             if (mPositionX == Map.MAP[0].length - 1) return;
 
             if (TileType.get(Map.MAP[mPositionY][mPositionX + 1]).isWalkable()) {
@@ -224,6 +233,7 @@ public class YusyaManager extends MonoColorFigure{
         if (isMoving()) return;
 
         if (duration < 0) {
+            mDirection = 1;
             if (mPositionY == 0) return;
 
             if (TileType.get(Map.MAP[mPositionY - 1][mPositionX]).isWalkable()) {
@@ -231,6 +241,7 @@ public class YusyaManager extends MonoColorFigure{
                 walkDistanceYLeft = -Map.TILE_LENGTH;
             }
         } else {
+            mDirection = 0;
             if (mPositionY == Map.MAP.length - 1) return;
 
             if (TileType.get(Map.MAP[mPositionY + 1][mPositionX]).isWalkable()) {
